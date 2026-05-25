@@ -1,0 +1,490 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>永返 — Loop Prison</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 扫描线覆盖层 -->
+  <div class="scanlines"></div>
+
+  <!-- 主容器 -->
+  <div id="game-container">
+
+    <!-- Canvas 游戏画布 -->
+    
+  <!-- Loading progress bar -->
+  <div id="loading-bar" class="loading-hidden">
+    <div class="loading-container">
+      <div class="loading-title">永返 · LOOP PRISON</div>
+      <div class="loading-track">
+        <div id="loading-fill" class="loading-fill" style="width: 0%"></div>
+      </div>
+      <div id="loading-text" class="loading-text">加载素材中...</div>
+    </div>
+  </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      <!-- 开始画面覆盖层 -->
+      <div id="start-screen">
+        <!-- NPC 角色 + 对话区域 -->
+        <div class="start-top-row">
+          <!-- 艾莉 AI 头像 -->
+          <div id="ally-avatar" class="ally-avatar" title="点击交谈">
+            <img id="ally-avatar-img" class="ally-avatar-img" src="assets/sprites/ally-avatar.png?v=20260524" alt="艾莉" onerror="this.style.display='none'" />
+            <div class="ally-core"></div>
+            <div class="ally-label">艾莉 · 核心 AI</div>
+          </div>
+          <!-- 对话气泡 -->
+          <div id="ally-dialogue" class="ally-dialogue hidden">
+            <div class="dialogue-skip">跳过</div>
+            <div class="dialogue-text"></div>
+            <div class="dialogue-next">[ 点击继续 ]</div>
+          </div>
+        </div>
+
+        <div class="start-glitch" data-text="永返">永返</div>
+        <div class="start-subtitle">LOOP PRISON</div>
+        <div class="start-divider"></div>
+        <p class="start-desc">双人协作 · 平台跳跃 · 限时修复</p>
+        <p class="start-desc-sub">键盘控制绿色角色 | 语音指挥橙色 AI 队友</p>
+        <button id="btn-start-game" class="start-btn">▶  开 始 游 戏</button>
+        <p class="start-hint">按 Enter 或 Space 亦可开始</p>
+      </div>
+      <!-- 通关/失败按钮覆盖层 -->
+      <div id="game-overlay">
+        <button id="btn-next-level" class="game-btn">► 进入下一关</button>
+        <button id="btn-retry" class="game-btn">↻ 重新开始</button>
+      </div>
+    </div>
+
+    <!-- UI 覆盖层 -->
+    <div id="ui-layer">
+      <div id="timer" class="ui-panel">⏳ 修复倒计时 60s</div>
+      <div class="ui-top-right">
+        <span id="infinite-badge" class="infinite-badge">♾ 无限 · 第1关</span>
+        <button id="btn-infinite-toggle" class="ui-panel infinite-toggle-btn">♾ 无限：开</button>
+        <button id="btn-skip" class="ui-panel skip-btn">⏭ 跳过此关</button>
+      </div>
+      <div id="ally-status" class="ui-panel ally-alive">◉ 艾莉存活中</div>
+    </div>
+
+    <!-- 无限模式统计条 -->
+    <div id="infinite-stats-bar" class="ui-panel infinite-stats-bar">
+      <span id="infinite-stats">总用时:0s | 总失误:0 | 关卡:1</span>
+    </div>
+
+    <!-- 语音控制面板 + 艾莉头像文字框 -->
+    <div id="llm-panel" class="ui-panel">
+      <div class="llm-left">
+        <div class="llm-row">
+          <button id="btn-voice-toggle" class="llm-btn llm-btn-voice">🎤 启动实时语音</button>
+            <button id="btn-reset" class="llm-btn llm-btn-reset">🔄 恢复连接</button>
+        </div>
+        <div class="llm-row">
+          <span id="voice-status" class="llm-status">⚪ 语音待命</span>
+        </div>
+        <div class="llm-row llm-row-info">
+          <span id="voice-interim" class="voice-interim">🎤 等待语音指令...</span>
+        </div>
+        <div class="llm-row llm-row-info">
+          <span id="volume-indicator" class="volume-indicator">🔇 音量：--</span>
+        </div>
+        <div class="llm-row llm-row-info">
+          <span id="llm-command-display" class="llm-command">等待指令...</span>
+        </div>
+      </div>
+      <div class="llm-right">
+        <div class="ally-inline">
+          <img id="ally-inline-avatar" class="ally-inline-avatar" src="assets/sprites/ally-avatar.png?v=20260524" alt="艾莉" onerror="this.style.display='none'" />
+          <div class="ally-inline-core"></div>
+        </div>
+        <div id="ally-inline-text" class="ally-inline-text">
+          <span class="ai-text-label">🤖 艾莉</span> 永返启动中，等待修复员就位...
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 自动生成文字框 -->
+    <div id="ai-text-box-container" class="ui-panel ai-text-box-container">
+      <div id="ai-text-box" class="ai-text-box">
+        <span class="ai-text-label">📜 叙事</span> 永返启动中，艾莉正在等待修复员就位...
+      </div>
+    </div>
+
+    <!-- 排行榜面板 -->
+    <div id="leaderboard-panel" class="ui-panel leaderboard-panel">
+      <div class="lb-header">
+        <span class="lb-title">🏆 永返排行榜</span>
+        <button id="btn-clear-lb" class="lb-clear-btn" title="清空排行榜">🗑</button>
+      </div>
+      <div class="lb-join-row">
+        <input type="text" id="player-name-input" class="llm-input lb-name-input" placeholder="输入修复员名称..." maxlength="16" />
+        <button id="btn-join" class="llm-btn lb-join-btn">📝 加入</button>
+        <span id="player-name-display" class="player-name-inactive">未加入</span>
+      </div>
+      <div id="leaderboard-list" class="leaderboard-list">
+        <div class="lb-empty">暂无记录 — 成为第一个逃脱永返的修复员吧！</div>
+      </div>
+    </div>
+
+    <!-- 底部：系统日志 -->
+    <div id="event-log" class="ui-panel">
+      <div class="log-entry">[系统] 永返启动，当前修复模块：等待初始化...</div>
+      <div class="log-entry">[系统] 艾莉正在维持空间稳定，请尽快完成修复任务。</div>
+    </div>
+
+  </div>
+
+  <!-- JS 文件按顺序加载 -->
+  <script src="js/audio.js"></script>
+    <script src="js/main.js?v=20260524l"></script>
+  <script src="js/levelGenerator.js?v=20260524l"></script>
+  <script src="js/spriteLoader.js?v=20260524l"></script>
+  <script src="js/map.js?v=20260524l"></script>
+  <script src="js/player.js?v=20260524l"></script>
+  <script src="js/aiPlayer.js?v=20260524l"></script>
+  <script src="js/events.js?v=20260524l"></script>
+  <script src="js/llmClient.js?v=20260524l"></script>
+  <script src="js/voice.js?v=20260524l"></script>
+  <script src="js/roast.js?v=20260524l"></script>
+  <script src="js/leaderboard.js?v=20260524l"></script>
+
+  <!-- 初始化脚本 -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ---- DOM 元素引用 ----
+      var btnVoice = document.getElementById('btn-voice-toggle');
+      var voiceStatus = document.getElementById('voice-status');
+      var cmdDisplay = document.getElementById('llm-command-display');
+      var voiceInterim = document.getElementById('voice-interim');
+
+      // ---- 注册语音实时回调 ----
+      function setupVoiceCallback() {
+        if (window.game && window.game.voiceControl) {
+          window.game.voiceControl.onInterimUpdate = function(state) {
+            var volEl = document.getElementById('volume-indicator');
+            var stageEl = document.getElementById('llm-command-display');
+            if (state.isListening) {
+              if (state.interimText) {
+                voiceInterim.textContent = '🎤 ' + state.interimText;
+                voiceInterim.className = 'voice-interim voice-interim-listening';
+              } else {
+                voiceInterim.textContent = '🎤 正在聆听...';
+                voiceInterim.className = 'voice-interim voice-interim-listening';
+              }
+              if (volEl) {
+                var vol = state.volume || 0;
+                var peak = state.peakVolume || 0;
+                var bars = Math.round(vol * 10);
+                var peakBars = Math.round(peak * 10);
+                var barStr = '';
+                for (var i = 0; i < Math.max(1, Math.min(10, bars)); i++) { barStr += '█'; }
+                var peakStr = '';
+                for (var i = 0; i < Math.max(0, Math.min(10, peakBars)); i++) { peakStr += '▓'; }
+                var icon = peak < 0.1 ? '🔇' : peak < 0.3 ? '🔈' : peak < 0.6 ? '🔉' : '🔊';
+                // Add noise state indicator
+                var noiseIcon = '';
+                if (state.noiseState === 'speech') noiseIcon = '🎤';
+                else if (state.noiseState === 'noise') noiseIcon = '📢';
+                else noiseIcon = '🔇';
+                volEl.textContent = noiseIcon + ' ' + barStr + ' | ' + peakStr + ' (' + state.volumeLevel + ', peak:' + peak.toFixed(2) + ')';
+                volEl.className = peak > 0.6 ? 'volume-indicator volume-loud' : 'volume-indicator';
+                // VAD 降级提示
+                var degradedEl = document.getElementById('vad-degraded-hint');
+                if (!degradedEl) {
+                  degradedEl = document.createElement('span');
+                  degradedEl.id = 'vad-degraded-hint';
+                  degradedEl.style.cssText = 'font-size:11px;color:#888;margin-left:8px';
+                  volEl.parentNode.appendChild(degradedEl);
+                }
+                degradedEl.textContent = state.vadDegraded ? ' ⚠️ 噪音过滤精度降低' : '';
+                degradedEl.style.color = state.vadDegraded ? '#888' : 'transparent';
+              }
+              // Show processing stage
+              if (stageEl && state.processingStage && state.processingStage !== 'idle') {
+                var stageText = '';
+                if (state.processingStage === 'waiting_model') stageText = '⏳ 等待模型响应...';
+                else if (state.processingStage === 'receiving_stream') stageText = '🤔 接收思考中...';
+                else if (state.processingStage === 'parsing') stageText = '📋 解析指令中...';
+                else if (state.processingStage === 'executing') stageText = '▶️ 执行动作中...';
+                else if (state.processingStage === 'complete') stageText = '✅ 完成';
+                if (stageText) stageEl.textContent = stageText;
+              }
+            } else {
+              voiceInterim.textContent = '🎤 语音待命';
+              voiceInterim.className = 'voice-interim';
+              if (volEl) { volEl.textContent = '🔇 音量：--'; volEl.className = 'volume-indicator'; }
+              if (stageEl) stageEl.textContent = '等待指令...';
+            }
+          };
+          return true;
+        }
+        return false;
+      }
+      if (!setupVoiceCallback()) {
+        var cbTimer = setInterval(function() {
+          if (setupVoiceCallback()) { clearInterval(cbTimer); }
+        }, 200);
+      }
+
+      // ---- AI 文字生成回调 ----
+      function setupRoastCallback() {
+        if (window.game && window.game.roast) {
+          window.game.roast.onTextGenerated = function(data) {
+            // 更新 AI 文字框
+            var box = document.getElementById('ai-text-box');
+            if (box) {
+              var label = data.type === 'roast' ? '🤖 AI吐槽' : '📜 叙事';
+              box.innerHTML = '<span class="ai-text-label">' + label + '</span> ' + data.text;
+              box.classList.add('ai-text-flash');
+              setTimeout(function() { box.classList.remove('ai-text-flash'); }, 1500);
+            }
+            // 同步更新艾莉内联文字框
+            var allyText = document.getElementById('ally-inline-text');
+            if (allyText) {
+              allyText.innerHTML = '<span class="ai-text-label">🤖 艾莉</span> ' + data.text;
+              allyText.classList.add('flash');
+              setTimeout(function() { allyText.classList.remove('flash'); }, 400);
+            }
+          };
+          return true;
+        }
+        return false;
+      }
+      if (!setupRoastCallback()) {
+        var roastTimer = setInterval(function() {
+          if (setupRoastCallback()) { clearInterval(roastTimer); }
+        }, 200);
+      }
+
+      // ---- 实时语音切换 ----
+      btnVoice.addEventListener('click', function() {
+        if (!window.game || !window.game.voiceControl) return;
+        if (window.game.voiceControl.isListening) {
+          window.game.voiceControl.stop();
+          btnVoice.textContent = '🎤 启动实时语音';
+          voiceStatus.textContent = '⚪ 语音待命';
+          voiceInterim.textContent = '🎤 语音待命';
+          voiceInterim.className = 'voice-interim';
+        } else {
+          window.game.voiceControl.start();
+          btnVoice.textContent = '🔴 停止实时语音';
+          voiceStatus.textContent = '🟢 实时监听中';
+          voiceInterim.textContent = '🎤 正在聆听...';
+          voiceInterim.className = 'voice-interim voice-interim-listening';
+        }
+      });
+
+      // ---- 手动重置连接 ----
+      var btnReset = document.getElementById('btn-reset');
+      btnReset.addEventListener('click', function() {
+        if (!window.game) return;
+        var client = window.game.llmClient;
+        if (client) {
+          client._isProcessing = false;
+          client._pendingTranscript = '';
+        }
+        var vc = window.game.voiceControl;
+        if (vc) {
+          if (vc.isListening) {
+            vc.stop();
+          }
+          setTimeout(function() {
+            if (vc) {
+              vc.start();
+              vc._rebuildRecognition();
+            }
+            document.getElementById('btn-voice-toggle').textContent = '🔴 停止实时语音';
+            document.getElementById('voice-status').textContent = '🟢 实时监听中';
+            document.getElementById('voice-interim').textContent = '🎤 正在聆听...';
+            document.getElementById('voice-interim').className = 'voice-interim voice-interim-listening';
+          }, 300);
+        }
+      });
+
+      // ---- 无限模式切换 ----
+      document.getElementById('btn-infinite-toggle').addEventListener('click', function() {
+        if (window.game) {
+          window.game.toggleInfiniteMode(!window.game.infiniteMode);
+        }
+      });
+
+      // ---- 排行榜：加入 ----
+      document.getElementById('btn-join').addEventListener('click', function() {
+        var nameInput = document.getElementById('player-name-input');
+        var name = nameInput.value.trim();
+        if (window.game && window.game.leaderboard) {
+          if (window.game.leaderboard.join(name)) {
+            window.game.addEventLog('[排行榜] 修复员 [' + name + '] 已登记录入！');
+          } else {
+            window.game.addEventLog('[排行榜] 请输入有效的修复员名称');
+          }
+        }
+      });
+
+      // ---- 排行榜：清空 ----
+      document.getElementById('btn-clear-lb').addEventListener('click', function() {
+        if (window.game && window.game.leaderboard) {
+          if (confirm('确定要清空排行榜吗？此操作不可恢复。')) {
+            window.game.leaderboard.clear();
+          }
+        }
+      });
+
+      // ---- 定期更新指令显示 ----
+      setInterval(function() {
+        if (window.game && window.game.llmClient) {
+          if (window.game.llmClient._isProcessing) {
+            var stage = window.game.llmClient.processingStage || '';
+            var stageText = '⏳ LLM 思考中...';
+            if (stage === 'waiting_model') stageText = '⏳ 等待模型响应...';
+            else if (stage === 'receiving_stream') stageText = '🤔 接收思考中...';
+            else if (stage === 'parsing') stageText = '📋 解析指令中...';
+            else if (stage === 'executing') stageText = '▶️ 执行动作中...';
+            cmdDisplay.textContent = stageText;
+          } else if (window.game.llmClient.lastAction) {
+            var a = window.game.llmClient.lastAction;
+            cmdDisplay.textContent = '🎯 ' + a.action + (a.reason ? ' (' + a.reason + ')' : '');
+          } else if (!window.game.voiceControl || !window.game.voiceControl.isListening) {
+            cmdDisplay.textContent = '等待指令...';
+          }
+        }
+      }, 500);
+
+      // ---- 初始化排行榜 ----
+      setTimeout(function() {
+        if (window.game && window.game.leaderboard) {
+          window.game.leaderboard.init();
+        }
+      }, 200);
+
+      // ---- 自动连接 LLM ----
+      setTimeout(async function() {
+        if (!window.game || !window.game.llmClient) return;
+        var client = window.game.llmClient;
+        client.setApiKey('YOUR_API_KEY_HERE');
+        client.setEndpoint('https://api.deepseek.com/chat/completions', 'deepseek-chat');
+
+        try {
+          var result = await client.testConnection();
+          if (result.ok) {
+            btnVoice.disabled = false;
+            voiceInterim.textContent = '🎤 点击启动实时语音';
+            window.game.addEventLog('[系统] LLM 已连接，AI 队友待命');
+            if (window.game.voiceControl) {
+              window.game.voiceControl.checkSupport();
+              if (!window.game.voiceControl.supported) {
+                window.game.addEventLog('[语音] 提示：请使用 Chrome/Edge 浏览器');
+              }
+            }
+          } else {
+            window.game.addEventLog('[LLM] 连接失败：' + (result.error || '未知错误'));
+          }
+        } catch (err) {
+          window.game.addEventLog('[LLM] 连接异常：' + err.message);
+        }
+      }, 800);
+
+    })();
+  </script>
+
+
+  <!-- Pause overlay -->
+  <div id="pause-overlay" class="overlay-hidden">
+    <div class="pause-content">
+      <div class="pause-icon">⏸</div>
+      <div class="pause-title">游戏暂停</div>
+      <div class="pause-hint">按 Escape 或 P 键继续</div>
+      <button id="btn-resume" class="pause-btn">▶ 继续游戏</button>
+    </div>
+  </div>
+
+
+  <!-- Settings gear button -->
+  <button id="btn-settings" class="settings-gear" title="设置">⚙️</button>
+
+  <!-- Settings modal -->
+  <div id="settings-modal" class="modal-hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>⚙️ 设置</span>
+        <button id="btn-settings-close" class="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label>🔊 音量</label>
+          <input type="range" id="setting-volume" min="0" max="100" value="50">
+          <span id="setting-volume-label">50%</span>
+        </div>
+        <div class="setting-group">
+          <label>🔑 API Key</label>
+          <input type="password" id="setting-apikey" placeholder="sk-...">
+        </div>
+        <div class="setting-group">
+          <label>🔗 Endpoint</label>
+          <input type="text" id="setting-endpoint" value="https://api.deepseek.com/chat/completions">
+        </div>
+        <div class="setting-group">
+          <label>🧠 Model</label>
+          <input type="text" id="setting-model" value="deepseek-chat">
+        </div>
+        <button id="btn-test-connection" class="settings-btn">🔌 测试连接</button>
+        <span id="setting-connection-status"></span>
+      </div>
+      <div class="modal-footer">
+        <p class="controls-help">
+          🎮 <b>A/D</b> 移动 · <b>W</b> 跳跃 · <b>S</b> 下蹲 · <b>Escape/P</b> 暂停
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Tutorial overlay -->
+  <div id="tutorial-overlay" class="modal-hidden">
+    <div class="tutorial-content">
+      <div class="tutorial-steps">
+        <div class="tutorial-step tutorial-step-active" data-step="0">
+          <div class="tutorial-icon">🎮</div>
+          <div class="tutorial-text">使用 <b>A/D</b> 键左右移动，<b>W</b> 跳跃，<b>S</b> 下蹲 — 绿色角色就是你！</div>
+        </div>
+        <div class="tutorial-step" data-step="1">
+          <div class="tutorial-icon">🎤</div>
+          <div class="tutorial-text">点击 <b>「启动实时语音」</b> 对麦克风说话，AI 队友会执行你的指令！</div>
+        </div>
+        <div class="tutorial-step" data-step="2">
+          <div class="tutorial-icon">🚩</div>
+          <div class="tutorial-text">和橙色 AI 队友协作，到达 <b>绿色终点区域</b> 即可通关！</div>
+        </div>
+      </div>
+      <div class="tutorial-dots">
+        <span class="tutorial-dot tutorial-dot-active"></span>
+        <span class="tutorial-dot"></span>
+        <span class="tutorial-dot"></span>
+      </div>
+      <div class="tutorial-nav">
+        <button id="tutorial-prev" class="tutorial-btn" disabled>← 上一步</button>
+        <button id="tutorial-next" class="tutorial-btn tutorial-btn-primary">下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="touch-controls" class="touch-hidden">
+    <div class="touch-left">
+      <button class="touch-btn touch-btn-left" data-key="ArrowLeft"><</button>
+      <button class="touch-btn touch-btn-right" data-key="ArrowRight">></button>
+    </div>
+    <div class="touch-right">
+      <button class="touch-btn touch-btn-jump" data-key="KeyW">^</button>
+      <button class="touch-btn touch-btn-crouch" data-key="KeyS">v</button>
+    </div>
+  </div></body>
+</html>
+
+

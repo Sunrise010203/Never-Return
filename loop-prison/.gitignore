@@ -1,0 +1,34 @@
+﻿# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Temp files
+temp_b64.txt
+test_decode.txt
+
+# Fix scripts (already applied)
+fix*.py
+gen*.py
+gen2.js
+make_llm.py
+analyze*.py
+write_*.py
+impl_*.py
+final_*.py
+run_me.py
+simple_fix.py
+fix_t*.py

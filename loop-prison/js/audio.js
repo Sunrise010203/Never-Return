@@ -1,0 +1,90 @@
+/* ============================================================
+ * 音效系统 — Web Audio API 合成 8-bit 风格音效
+ *
+ * 无需任何外部音频文件，全部用 OscillatorNode 实时合成。
+ * 挂载点：window.game.audio
+ * ============================================================ */
+
+window.game.audio = {
+  _ctx: null,
+  volume: 0.5,
+  _supported: false,
+
+  _init() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) { this._supported = false; return; }
+      this._ctx = new AC();
+      this._supported = true;
+    } catch (e) {
+      this._supported = false;
+    }
+  },
+
+  _ensureContext() {
+    if (!this._ctx) this._init();
+    if (!this._supported) return false;
+    if (this._ctx.state === 'suspended') {
+      try { this._ctx.resume(); } catch(e) {}
+    }
+    return true;
+  },
+
+  _playTone(freq, duration, type, gainVal) {
+    if (!this._ensureContext()) return;
+    try {
+      var osc = this._ctx.createOscillator();
+      var gain = this._ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, this._ctx.currentTime);
+      gain.gain.setValueAtTime((gainVal || 0.3) * this.volume, this._ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this._ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this._ctx.destination);
+      osc.start();
+      osc.stop(this._ctx.currentTime + duration);
+    } catch(e) {}
+  },
+
+  _playSweep(startFreq, endFreq, duration, type, gainVal) {
+    if (!this._ensureContext()) return;
+    try {
+      var osc = this._ctx.createOscillator();
+      var gain = this._ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(startFreq, this._ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(endFreq, this._ctx.currentTime + duration);
+      gain.gain.setValueAtTime((gainVal || 0.3) * this.volume, this._ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this._ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this._ctx.destination);
+      osc.start();
+      osc.stop(this._ctx.currentTime + duration);
+    } catch(e) {}
+  },
+
+  /** 跳跃音效：短上升音阶 240→480Hz */
+  playJump() { this._playSweep(240, 480, 0.1, 'square', 0.2); },
+
+  /** 着陆音效：短低音冲击 150Hz */
+  playLand() { this._playTone(150, 0.05, 'sine', 0.25); },
+
+  /** 死亡音效：下降滑音 400→80Hz */
+  playDeath() { this._playSweep(400, 80, 0.3, 'sawtooth', 0.3); },
+
+  /** 通关音效：上升琴音 C-E-G-C */
+  playWin() {
+    this._playTone(262, 0.12, 'sine', 0.25);
+    var self = this;
+    setTimeout(function() { self._playTone(330, 0.12, 'sine', 0.25); }, 120);
+    setTimeout(function() { self._playTone(392, 0.12, 'sine', 0.25); }, 240);
+    setTimeout(function() { self._playTone(523, 0.2, 'sine', 0.3); }, 360);
+  },
+
+  /** 语音指令提示音：双音 600+900Hz */
+  playCommand() {
+    this._playTone(600, 0.08, 'sine', 0.15);
+    var self = this;
+    setTimeout(function() { self._playTone(900, 0.08, 'sine', 0.15); }, 60);
+  }
+};

@@ -1,0 +1,1649 @@
+﻿/* ============================================================
+ * 永返 — 深色终端/故障艺术风格样式
+ *
+ * 色彩方案：深黑 #0a0a0a / 荧光绿 #00ff41 / 故障橙 #ff6b35
+ * ============================================================ */
+
+/* === 开始画面 === */
+#start-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 40;
+  pointer-events: auto;
+  transition: opacity 0.5s ease;
+}
+
+#start-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 标题 — 故障效果 */
+.start-glitch {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 36px;
+  font-weight: bold;
+  color: #00ff41;
+  text-shadow:
+    0 0 10px rgba(0, 255, 65, 0.6),
+    0 0 40px rgba(0, 255, 65, 0.2);
+  letter-spacing: 4px;
+  position: relative;
+  margin-bottom: 6px;
+}
+
+/* 故障伪影 */
+.start-glitch::before,
+.start-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.start-glitch::before {
+  color: #ff6b35;
+  animation: glitch-orange 3s infinite;
+  z-index: -1;
+}
+
+.start-glitch::after {
+  color: #00bfff;
+  animation: glitch-blue 3s infinite;
+  z-index: -2;
+}
+
+@keyframes glitch-orange {
+  0%, 92%, 100% { opacity: 0; transform: translate(0, 0); }
+  93% { opacity: 0.4; transform: translate(-3px, 1px); }
+  94% { opacity: 0; transform: translate(2px, -1px); }
+}
+
+@keyframes glitch-blue {
+  0%, 95%, 100% { opacity: 0; transform: translate(0, 0); }
+  96% { opacity: 0.3; transform: translate(2px, -1px); }
+  97% { opacity: 0; transform: translate(-1px, 1px); }
+}
+
+/* 副标题 */
+.start-subtitle {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 16px;
+  color: #888888;
+  letter-spacing: 8px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.2);
+}
+
+/* 分隔线 */
+.start-divider {
+  width: 300px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00ff41, transparent);
+  margin-bottom: 20px;
+  box-shadow: 0 0 6px rgba(0, 255, 65, 0.4);
+}
+
+/* 描述文字 */
+.start-desc {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  color: #00cc33;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+  text-shadow: 0 0 4px rgba(0, 255, 65, 0.2);
+}
+
+.start-desc-sub {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  color: #666666;
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+}
+
+/* 开始按钮 */
+.start-btn {
+  width: 260px;
+  padding: 14px 0;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #00ff41;
+  color: #00ff41;
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  box-shadow: 0 0 16px rgba(0, 255, 65, 0.25), inset 0 0 10px rgba(0, 255, 65, 0.08);
+  transition: all 0.25s ease;
+  animation: btn-glow 2s ease-in-out infinite;
+}
+
+.start-btn:hover {
+  background: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 28px rgba(0, 255, 65, 0.5), inset 0 0 16px rgba(0, 255, 65, 0.15);
+  transform: scale(1.04);
+}
+
+.start-btn:active {
+  transform: scale(0.96);
+  transition: transform 0.05s ease;
+}
+
+@keyframes btn-glow {
+  0%, 100% { box-shadow: 0 0 16px rgba(0, 255, 65, 0.25), inset 0 0 10px rgba(0, 255, 65, 0.08); }
+  50%      { box-shadow: 0 0 24px rgba(0, 255, 65, 0.4), inset 0 0 14px rgba(0, 255, 65, 0.12); }
+}
+
+/* 提示文字 */
+.start-hint {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 10px;
+  color: #444444;
+  letter-spacing: 1px;
+  margin-top: 16px;
+}
+
+/* === 开始画面顶部（NPC + 对话） === */
+.start-top-row {
+  position: absolute;
+  top: 24px;
+  left: 30px;
+  right: 30px;
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+/* === NPC 角色造型（CSS 绘制） === */
+.npc-figure {
+  flex-shrink: 0;
+  width: 72px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.npc-figure:hover {
+  transform: scale(1.08);
+}
+
+.npc-figure:hover .npc-label {
+  color: #ff6b35;
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+}
+
+/* 兜帽 */
+.npc-hood {
+  width: 54px;
+  height: 32px;
+  background: #1a1a2e;
+  border: 1.5px solid #ff6b35;
+  border-bottom: none;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 0 8px rgba(255, 107, 53, 0.15), inset 0 0 12px rgba(255, 107, 53, 0.05);
+}
+
+/* 脸 */
+.npc-face {
+  width: 48px;
+  height: 26px;
+  background: #1a1a2e;
+  border-left: 1.5px solid #ff6b35;
+  border-right: 1.5px solid #ff6b35;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+/* 眼睛 */
+.npc-eye {
+  width: 4px;
+  height: 4px;
+  background: #00ff41;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #00ff41, 0 0 8px rgba(0, 255, 65, 0.5);
+  animation: npc-blink 3s infinite;
+}
+
+@keyframes npc-blink {
+  0%, 95%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
+
+/* 嘴 */
+.npc-mouth {
+  width: 8px;
+  height: 2px;
+  background: #00ff41;
+  opacity: 0.6;
+  margin-top: 1px;
+}
+
+/* 身体 */
+.npc-body {
+  width: 52px;
+  height: 40px;
+  background: #1a1a2e;
+  border: 1.5px solid #ff6b35;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 0 6px rgba(255, 107, 53, 0.1);
+  position: relative;
+}
+
+/* 身体上的终端标记 */
+.npc-body::after {
+  content: '>_';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 8px;
+  color: #00ff41;
+  opacity: 0.4;
+  animation: npc-cursor 1.2s infinite;
+}
+
+@keyframes npc-cursor {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* NPC 标签 */
+.npc-label {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 8px;
+  color: #555555;
+  letter-spacing: 1px;
+  margin-top: 6px;
+  transition: all 0.2s ease;
+}
+
+/* === 对话气泡 === */
+.npc-dialogue {
+  flex: 1;
+  min-height: 72px;
+  background: rgba(0, 0, 0, 0.88);
+  border: 1px solid rgba(255, 107, 53, 0.35);
+  padding: 12px 16px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  color: #dddddd;
+  font-size: 12px;
+  line-height: 1.7;
+  letter-spacing: 0.5px;
+  position: relative;
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.1), inset 0 0 20px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.25s ease;
+}
+
+/* 对话气泡左侧三角箭头 */
+.npc-dialogue::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 8px solid rgba(255, 107, 53, 0.35);
+}
+
+.npc-dialogue.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dialogue-text {
+  color: #cccccc;
+  text-shadow: 0 0 2px rgba(200, 200, 200, 0.2);
+  min-height: 20px;
+}
+
+/* 说话者名字 */
+.dialogue-text .speaker {
+  color: #ff6b35;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.4);
+  margin-right: 6px;
+}
+
+.dialogue-next {
+  font-size: 10px;
+  color: #555555;
+  letter-spacing: 1px;
+  margin-top: 8px;
+  animation: npc-cursor 1.8s infinite;
+}
+
+.npc-dialogue:not(.hidden) .dialogue-next {
+  cursor: pointer;
+}
+
+.npc-dialogue:not(.hidden):hover .dialogue-next {
+  color: #ff6b35;
+}
+
+/* ====== 对话终态（已读完全部内容） ====== */
+.npc-figure.talked .npc-label {
+  color: #666666;
+}
+
+/* === 艾莉 AI 头像（赛博朋克风格） === */
+.ally-avatar {
+  flex-shrink: 0;
+  width: 90px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.ally-avatar:hover {
+  transform: scale(1.05);
+}
+
+.ally-avatar:hover .ally-label {
+  color: #ff6b35;
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+}
+
+.ally-avatar-img {
+  width: 56px;
+  height: 56px;
+  border: 2px solid #ff6b35;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.3), inset 0 0 20px rgba(255, 107, 53, 0.1);
+  object-fit: cover;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 100%);
+}
+
+.ally-avatar-img::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  border-radius: 50%;
+  animation: ally-pulse 2s infinite;
+}
+
+@keyframes ally-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+}
+
+.ally-core {
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, #ff6b35 0%, #1a1a2e 70%);
+  border: 1px solid #ff6b35;
+  border-radius: 50%;
+  margin-top: 8px;
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+  animation: ally-glow 1.5s infinite alternate;
+}
+
+@keyframes ally-glow {
+  0% { box-shadow: 0 0 5px rgba(255, 107, 53, 0.3); }
+  100% { box-shadow: 0 0 15px rgba(255, 107, 53, 0.8); }
+}
+
+.ally-label {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #ff6b35;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.4);
+  transition: all 0.2s ease;
+}
+
+.ally-dialogue {
+  position: relative;
+  background: rgba(10, 10, 26, 0.95);
+  border: 1.5px solid #ff6b35;
+  border-radius: 8px;
+  padding: 16px 20px;
+  max-width: 480px;
+  color: #e0e0e0;
+  font-size: 14px;
+  line-height: 1.6;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.2), inset 0 0 30px rgba(255, 107, 53, 0.05);
+  animation: dialogue-fadein 0.3s ease;
+}
+
+.ally-dialogue::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 20px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 10px solid #ff6b35;
+}
+
+.ally-dialogue.hidden {
+  display: none;
+}
+
+.ally-dialogue .speaker {
+  color: #ff6b35;
+  font-weight: bold;
+}
+
+.ally-dialogue .dialogue-text {
+  margin-bottom: 10px;
+  padding-right: 50px;
+  min-height: 40px;
+}
+
+.ally-dialogue .dialogue-next {
+  font-size: 11px;
+  color: #888;
+  text-align: right;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ally-dialogue .dialogue-next:hover {
+  color: #ff6b35;
+}
+
+.ally-dialogue .dialogue-skip {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 10px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid #444;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.ally-dialogue .dialogue-skip:hover {
+  color: #ff6b35;
+  border-color: #ff6b35;
+}
+
+.ally-avatar.talked .ally-label {
+  color: #666666;
+}
+
+/* === 基础重置 === */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0a0a;
+  color: #00ff41;
+  font-family: 'Courier New', 'Consolas', monospace;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* === 全屏扫描线效果 === */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.05) 2px,
+    rgba(0, 0, 0, 0.05) 4px
+  );
+}
+
+/* === 主容器 === */
+#game-container {
+  position: relative;
+  width: 840px;
+}
+
+/* === Canvas 包装器（发光边框 + 伪影） === */
+.canvas-wrapper {
+  position: relative;
+  width: 800px;
+  height: 600px;
+  margin: 0 auto;
+  border: 2px solid #00ff41;
+  box-shadow:
+    0 0 10px rgba(0, 255, 65, 0.3),
+    0 0 30px rgba(0, 255, 65, 0.1),
+    inset 0 0 10px rgba(0, 255, 65, 0.05);
+  transition: box-shadow 0.5s ease, border-color 0.5s ease;
+}
+
+/* Canvas 上方扫描线伪影 */
+.canvas-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 255, 65, 0.02) 3px,
+    rgba(0, 255, 65, 0.02) 4px
+  );
+}
+
+/* Canvas 角落装饰 */
+.canvas-wrapper::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 20px;
+  height: 20px;
+  border-top: 2px solid #ff6b35;
+  border-left: 2px solid #ff6b35;
+  z-index: 20;
+  pointer-events: none;
+}
+
+canvas#gameCanvas {
+  display: block;
+  background: #0a0a1a;
+}
+
+/* === UI 覆盖层 === */
+#ui-layer {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* 跳过按钮 */
+.skip-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  color: #888888;
+  border-color: rgba(136, 136, 136, 0.3);
+  text-shadow: none;
+  transition: all 0.2s ease;
+}
+
+.skip-btn:hover {
+  color: #ff6b35;
+  border-color: rgba(255, 107, 53, 0.5);
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.3);
+}
+
+/* === UI 面板通用 === */
+.ui-panel {
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  padding: 6px 14px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px currentColor;
+  white-space: nowrap;
+}
+
+/* === 计时器 === */
+#timer {
+  color: #00ff41;
+  transition: color 0.3s ease;
+  margin-left: 15px;
+}
+
+/* 超时闪烁动画 */
+@keyframes blink-red {
+  0%, 100% { color: #ff3333; text-shadow: 0 0 8px #ff0000; }
+  50%      { color: #ff6b35; text-shadow: 0 0 3px #ff6b35; }
+}
+
+#timer.timeout {
+  animation: blink-red 0.5s infinite;
+}
+
+/* === 艾莉状态 === */
+#ally-status {
+  color: #00ff41;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+  margin-right: 12px;
+}
+
+#ally-status.ally-damaged {
+  color: #ff3333;
+  text-shadow: 0 0 10px #ff0000;
+  animation: blink-red 0.6s infinite;
+}
+
+/* === 系统日志 === */
+#event-log {
+  position: relative;
+  width: 800px;
+  height: 120px;
+  margin: 4px auto 0;
+  padding: 8px 12px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #00cc33;
+  z-index: 10;
+}
+
+/* 日志滚动条美化 */
+#event-log::-webkit-scrollbar {
+  width: 4px;
+}
+
+#event-log::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+#event-log::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 65, 0.3);
+  border-radius: 2px;
+}
+
+/* 单条日志 */
+.log-entry {
+  padding: 1px 0;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.06);
+  word-break: break-all;
+}
+
+/* 警告类日志 */
+.log-entry.warning {
+  color: #ff6b35;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.4);
+}
+
+/* 成功类日志 */
+.log-entry.success {
+  color: #00ff41;
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.5);
+}
+
+/* === 通关/失败按钮覆盖层 === */
+#game-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 130px;
+  z-index: 30;
+  pointer-events: none;
+}
+
+#game-overlay.visible {
+  display: flex;
+  pointer-events: auto;
+}
+
+.game-btn {
+  display: none;
+  width: 220px;
+  padding: 12px 0;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #00ff41;
+  color: #00ff41;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.2), inset 0 0 8px rgba(0, 255, 65, 0.08);
+  transition: all 0.2s ease;
+}
+
+.game-btn.visible {
+  display: block;
+}
+
+.game-btn:hover {
+  background: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.4), inset 0 0 12px rgba(0, 255, 65, 0.15);
+  transform: scale(1.03);
+}
+
+.game-btn:active {
+  transform: scale(0.98);
+}
+
+#btn-retry {
+  border-color: #ff6b35;
+  color: #ff6b35;
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.2), inset 0 0 8px rgba(255, 107, 53, 0.08);
+}
+
+#btn-retry:hover {
+  background: rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4), inset 0 0 12px rgba(255, 107, 53, 0.15);
+}
+
+/* === LLM / 语音控制面板 === */
+#llm-panel {
+  width: 800px;
+  margin: 4px auto 0;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  z-index: 10;
+}
+
+.llm-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.llm-row:last-child {
+  margin-bottom: 0;
+}
+
+.llm-row-info {
+  margin-top: 2px;
+}
+
+.llm-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 65, 0.2);
+  color: #00ff41;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  padding: 4px 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.llm-input:focus {
+  border-color: rgba(0, 255, 65, 0.6);
+  box-shadow: 0 0 6px rgba(0, 255, 65, 0.2);
+}
+
+.llm-input::placeholder {
+  color: rgba(0, 255, 65, 0.3);
+}
+
+.llm-input-endpoint {
+  flex: 2;
+}
+
+.llm-input-model {
+  flex: 0.8;
+  min-width: 100px;
+}
+
+.llm-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 107, 53, 0.4);
+  color: #ff6b35;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.llm-btn:hover:not(:disabled) {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: #ff6b35;
+  box-shadow: 0 0 8px rgba(255, 107, 53, 0.3);
+}
+
+.llm-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* === 语音按钮（放大 + 醒目） === */
+.llm-btn-voice {
+  padding: 10px 20px !important;
+  font-size: 15px !important;
+  font-weight: bold !important;
+  letter-spacing: 2px !important;
+  border: 2px solid #ff6b35 !important;
+  color: #ff6b35 !important;
+  background: rgba(255, 107, 53, 0.08) !important;
+  text-shadow: 0 0 10px rgba(255, 107, 53, 0.5) !important;
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.3), inset 0 0 8px rgba(255, 107, 53, 0.1) !important;
+  transition: all 0.2s ease !important;
+  animation: voice-btn-pulse 2s ease-in-out infinite;
+}
+
+.llm-btn-voice:hover:not(:disabled) {
+  background: rgba(255, 107, 53, 0.2) !important;
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.5), inset 0 0 14px rgba(255, 107, 53, 0.2) !important;
+  transform: scale(1.05);
+}
+
+.llm-btn-voice:disabled {
+  opacity: 0.4;
+  animation: none;
+}
+
+@keyframes voice-btn-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 107, 53, 0.3), inset 0 0 8px rgba(255, 107, 53, 0.1); }
+  50%      { box-shadow: 0 0 22px rgba(255, 107, 53, 0.5), inset 0 0 14px rgba(255, 107, 53, 0.2); }
+}
+
+.llm-status {
+  font-size: 11px;
+  color: #888888;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.llm-command {
+  font-size: 11px;
+  color: #00ff41;
+  text-shadow: 0 0 4px rgba(0, 255, 65, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === LLM 选择器/下拉框 === */
+.llm-select {
+  flex: 0.6;
+  min-width: 100px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(0, 0, 0, 0.6) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2300ff41' opacity='0.5'/%3E%3C/svg%3E") no-repeat right 8px center;
+  padding-right: 24px;
+}
+
+.llm-select option {
+  background: #0a0a0a;
+  color: #00ff41;
+}
+
+/* === LLM 错误信息 === */
+.llm-error {
+  flex: 1;
+  font-size: 11px;
+  color: #ff6b35;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === 实时语音识别文本显示 === */
+.voice-interim {
+  flex: 1;
+  font-size: 13px;
+  color: #888888;
+  text-shadow: 0 0 4px rgba(0, 255, 65, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.voice-interim-listening {
+  color: #00ff41;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+/* === 音量指示器 === */
+.volume-indicator {
+  font-size: 12px;
+  color: #00ff41;
+  text-shadow: 0 0 4px rgba(0, 255, 65, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.volume-loud {
+  color: #ff6b35;
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+}
+
+/* === 手动重置按钮（棕色风格） === */
+.llm-btn-reset {
+    background: rgba(139, 90, 43, 0.25) !important;
+    border: 1px solid rgba(139, 90, 43, 0.5) !important;
+    color: #d4a04a !important;
+    font-size: 11px !important;
+    padding: 4px 10px !important;
+    transition: all 0.2s ease !important;
+}
+
+.llm-btn-reset:hover:not(:disabled) {
+    background: rgba(139, 90, 43, 0.4) !important;
+    border-color: #d4a04a !important;
+    box-shadow: 0 0 8px rgba(139, 90, 43, 0.4) !important;
+}
+
+/* === UI 层右上角按钮组 === */
+.ui-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* === 无限模式标识 === */
+.infinite-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(136, 136, 136, 0.3);
+  color: #888;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.infinite-badge.infinite-active {
+  color: #ff6b35;
+  border-color: rgba(255, 107, 53, 0.5);
+  text-shadow: 0 0 8px rgba(255, 107, 53, 0.4);
+  animation: infinite-pulse 2s ease-in-out infinite;
+}
+
+@keyframes infinite-pulse {
+  0%, 100% { border-color: rgba(255, 107, 53, 0.5); }
+  50%      { border-color: rgba(255, 107, 53, 0.9); }
+}
+
+/* === 无限模式切换按钮 === */
+.infinite-toggle-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  color: #888;
+  border-color: rgba(136, 136, 136, 0.3);
+  text-shadow: none;
+  font-size: 11px;
+  padding: 4px 10px;
+  transition: all 0.2s ease;
+}
+
+.infinite-toggle-btn:hover {
+  color: #ff6b35;
+  border-color: rgba(255, 107, 53, 0.5);
+  text-shadow: 0 0 6px rgba(255, 107, 53, 0.3);
+}
+
+/* === 无限模式统计条 === */
+.infinite-stats-bar {
+  width: 800px;
+  margin: 2px auto 0;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: #ff6b35;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.3);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  text-align: center;
+}
+
+/* === AI 自动生成文字框 === */
+.ai-text-box-container {
+  width: 800px;
+  margin: 4px auto 0;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  min-height: 32px;
+}
+
+.ai-text-box {
+  color: #00ccff;
+  text-shadow: 0 0 6px rgba(0, 204, 255, 0.3);
+  line-height: 1.5;
+  transition: all 0.3s ease;
+}
+
+.ai-text-label {
+  color: rgba(0, 204, 255, 0.5);
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.ai-text-flash {
+  animation: ai-text-flash-anim 0.3s ease-out;
+}
+
+@keyframes ai-text-flash-anim {
+  0%   { text-shadow: 0 0 15px rgba(0, 204, 255, 0.8); }
+  100% { text-shadow: 0 0 6px rgba(0, 204, 255, 0.3); }
+}
+
+/* === 排行榜面板 === */
+.leaderboard-panel {
+  width: 800px;
+  margin: 4px auto 0;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.lb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.lb-title {
+  color: #ffd700;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  letter-spacing: 2px;
+}
+
+.lb-clear-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 80, 80, 0.4);
+  color: #ff5050;
+  font-size: 14px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lb-clear-btn:hover {
+  background: rgba(255, 80, 80, 0.15);
+  border-color: #ff5050;
+  box-shadow: 0 0 8px rgba(255, 80, 80, 0.3);
+}
+
+/* === 排行榜加入行 === */
+.lb-join-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+}
+
+.lb-name-input {
+  flex: 1;
+  max-width: 180px;
+}
+
+.lb-join-btn {
+  padding: 4px 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lb-join-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: #ffd700;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+/* === 玩家名称显示 === */
+.player-name-active {
+  color: #ffd700;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+
+.player-name-inactive {
+  color: #666;
+  font-size: 12px;
+}
+
+/* === 排行榜列表 === */
+.leaderboard-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.leaderboard-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.leaderboard-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.leaderboard-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 2px;
+}
+
+.lb-empty {
+  text-align: center;
+  color: #666;
+  padding: 16px 0;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* === 排行榜条目 === */
+.lb-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.06);
+  transition: background 0.2s;
+}
+
+.lb-entry:hover {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.lb-rank-1 { background: rgba(255, 215, 0, 0.1); }
+.lb-rank-2 { background: rgba(192, 192, 192, 0.08); }
+.lb-rank-3 { background: rgba(205, 127, 50, 0.06); }
+
+.lb-rank {
+  width: 28px;
+  text-align: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.lb-name {
+  flex: 2;
+  color: #ffd700;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.lb-levels {
+  flex: 0 0 55px;
+  color: #00ff41;
+  text-shadow: 0 0 4px rgba(0, 255, 65, 0.3);
+  text-align: center;
+}
+
+.lb-mistakes {
+  flex: 0 0 50px;
+  color: #ff6b35;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.3);
+  text-align: center;
+}
+
+.lb-time {
+  flex: 0 0 55px;
+  color: #00ccff;
+  text-shadow: 0 0 4px rgba(0, 204, 255, 0.3);
+  text-align: center;
+}
+
+.lb-date {
+  flex: 0 0 80px;
+  color: #888;
+  font-size: 10px;
+  text-align: right;
+}
+
+/* === LLM 面板两栏布局 === */
+#llm-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.llm-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.llm-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255, 107, 53, 0.25);
+}
+
+/* === 艾莉内联头像 === */
+.ally-inline {
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ally-inline-avatar {
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid #ff6b35;
+  border-radius: 50%;
+  object-fit: cover;
+  background: linear-gradient(135deg, #1a1a2e 0%, #0a0a1a 100%);
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.3), inset 0 0 14px rgba(255, 107, 53, 0.08);
+  transition: all 0.3s ease;
+}
+
+.ally-inline-core {
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #ff6b35 0%, #1a1a2e 70%);
+  border: 1px solid #ff6b35;
+  border-radius: 50%;
+  margin-top: 4px;
+  box-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
+  animation: ally-inline-glow 1.5s infinite alternate;
+}
+
+@keyframes ally-inline-glow {
+  0% { box-shadow: 0 0 4px rgba(255, 107, 53, 0.3); }
+  100% { box-shadow: 0 0 12px rgba(255, 107, 53, 0.7); }
+}
+
+/* === 艾莉内联文字框 === */
+.ally-inline-text {
+  flex: 1;
+  min-width: 160px;
+  max-width: 280px;
+  color: #dddddd;
+  font-size: 11px;
+  line-height: 1.5;
+  text-shadow: 0 0 3px rgba(255, 107, 53, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  padding: 6px 10px;
+  border-radius: 4px;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* 文字框左侧三角箭头 */
+.ally-inline-text::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: -7px;
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 7px solid rgba(255, 107, 53, 0.2);
+}
+
+.ally-inline-text .ai-text-label {
+  color: #ff6b35;
+  font-weight: bold;
+  margin-right: 2px;
+  font-size: 10px;
+  text-shadow: 0 0 4px rgba(255, 107, 53, 0.4);
+}
+
+.ally-inline-text.flash {
+  animation: ally-text-flash 0.4s ease-out;
+}
+
+@keyframes ally-text-flash {
+  0%   { text-shadow: 0 0 12px rgba(255, 107, 53, 0.7); border-color: rgba(255, 107, 53, 0.6); }
+  100% { text-shadow: 0 0 3px rgba(255, 107, 53, 0.2); border-color: rgba(255, 107, 53, 0.2); }
+}
+
+/* ===== Pause overlay ===== */
+#pause-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.2s ease;
+}
+#pause-overlay.overlay-hidden { display: none; }
+#pause-overlay.overlay-visible { display: flex; }
+.pause-content {
+  text-align: center;
+  color: #fff;
+}
+.pause-icon { font-size: 64px; margin-bottom: 10px; }
+.pause-title { font-size: 32px; font-weight: bold; margin-bottom: 10px; color: #ff6b35; }
+.pause-hint { font-size: 14px; color: #888; margin-bottom: 20px; }
+.pause-btn {
+  background: #ff6b35;
+  color: #fff;
+  border: none;
+  padding: 10px 30px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pause-btn:hover { background: #ff8c5a; }
+
+/* ===== Settings gear + modal ===== */
+.settings-gear {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 107, 53, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.settings-gear:hover { background: #ff6b35; }
+
+#settings-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+#settings-modal.modal-hidden { display: none; }
+#settings-modal.modal-visible { display: flex; }
+.modal-content {
+  background: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 0;
+  width: 400px;
+  max-width: 90vw;
+  color: #ccc;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #333;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 20px;
+  cursor: pointer;
+}
+.modal-close:hover { color: #fff; }
+.modal-body { padding: 20px; }
+.modal-footer {
+  padding: 10px 20px;
+  border-top: 1px solid #333;
+  font-size: 12px;
+  color: #666;
+}
+.setting-group {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.setting-group label {
+  width: 100px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.setting-group input[type=range] { flex: 1; }
+.setting-group input[type=text],
+.setting-group input[type=password] {
+  flex: 1;
+  background: #0a0a1a;
+  border: 1px solid #333;
+  color: #ccc;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+}
+.settings-btn {
+  background: #ff6b35;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+.settings-btn:hover { background: #ff8c5a; }
+#setting-connection-status { font-size: 13px; }
+.controls-help { margin: 0; text-align: center; color: #555; }
+
+/* ===== Tutorial overlay ===== */
+#tutorial-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+#tutorial-overlay.modal-hidden { display: none; }
+#tutorial-overlay.modal-visible { display: flex; }
+.tutorial-content {
+  background: #1a1a2e;
+  border: 1px solid #ff6b35;
+  border-radius: 12px;
+  padding: 30px;
+  width: 420px;
+  max-width: 90vw;
+  text-align: center;
+}
+.tutorial-step { display: none; padding: 20px 0; }
+.tutorial-step-active { display: block; }
+.tutorial-icon { font-size: 48px; margin-bottom: 15px; }
+.tutorial-text { font-size: 16px; line-height: 1.6; color: #ccc; }
+.tutorial-text b { color: #ff6b35; }
+.tutorial-dots { margin: 15px 0; }
+.tutorial-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #333;
+  margin: 0 5px;
+  transition: background 0.3s;
+}
+.tutorial-dot-active { background: #ff6b35; }
+.tutorial-nav { display: flex; justify-content: space-between; gap: 10px; }
+.tutorial-btn {
+  flex: 1;
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.tutorial-btn:disabled { opacity: 0.4; cursor: default; }
+.tutorial-btn-primary { background: #ff6b35; }
+.tutorial-btn-primary:hover { background: #ff8c5a; }
+
+
+/* ===== Loading bar ===== */
+#loading-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #0a0a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+#loading-bar.loading-hidden { display: none; }
+#loading-bar.loading-visible { display: flex; }
+.loading-container { text-align: center; width: 320px; }
+.loading-title { font-size: 20px; color: #ff6b35; margin-bottom: 20px; letter-spacing: 2px; }
+.loading-track {
+  width: 100%; height: 6px;
+  background: #1a1a2e;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.loading-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b35, #ff8c5a, #ff6b35);
+  background-size: 200% 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  animation: loading-shimmer 1.5s infinite;
+}
+@keyframes loading-shimmer {
+  0% { background-position: 0% 0%; }
+  100% { background-position: -200% 0%; }
+}
+.loading-text { font-size: 13px; color: #666; margin-top: 10px; }
+
+/* ===== Touch controls (mobile only) ===== */
+#touch-controls {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 0;
+  z-index: 800;
+  pointer-events: none;
+}
+.touch-left {
+  position: fixed;
+  bottom: 30px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  pointer-events: auto;
+}
+.touch-right {
+  position: fixed;
+  bottom: 30px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  pointer-events: auto;
+}
+.touch-btn {
+  width: 65px; height: 65px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.touch-btn:active, .touch-btn-active {
+  background: rgba(255, 107, 53, 0.4);
+  border-color: #ff6b35;
+  color: #fff;
+}
+.touch-btn-jump {
+  width: 75px; height: 75px;
+  font-size: 28px;
+}
+.touch-btn-crouch {
+  width: 55px; height: 55px;
+  font-size: 20px;
+}
+@media (hover: hover) and (pointer: fine) {
+  #touch-controls { display: none; }
+}

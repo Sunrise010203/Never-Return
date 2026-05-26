@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
  * 游戏总控 — 《永返》横版平台跳跃
  *
  * 管理游戏状态、计时器、主循环、重生逻辑。
@@ -448,7 +448,7 @@ window.game = {
 
       // 通关判定
 if (window.game.audio) window.game.audio.playWin();
-      if (this.      if (this.checkWinCondition()) {
+      if (this.checkWinCondition()) {
         this.state = 'win';
         var levelLabel2 = '第' + (this.currentLevelIndex + 1) + '关';
         if (this.currentLevelIndex >= this.levels.length) {
@@ -541,18 +541,7 @@ if (window.game.audio) window.game.audio.playWin();
 
     }
     // 继续循环
-    if (this.animFrameId !== null) {
-          // Show tutorial on first launch
-    if (!localStorage.getItem('loopPrisonTutorialDone')) {
-      this._showTutorial();
-    } else {
-      this._startLoop();
-    }
-  },
-
-  _startLoop() {
     this.animFrameId = requestAnimationFrame((ts) => this.gameLoop(ts));
-    }
   },
 
   // ============================================================

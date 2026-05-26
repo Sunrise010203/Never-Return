@@ -495,6 +495,7 @@ if (this.checkWinCondition()) {
     }
 
     // --- 绘制 ---
+    try {
     if (this.map && typeof this.map.draw === 'function') {
       this.map.draw(this.ctx);
     }
@@ -541,6 +542,7 @@ if (this.checkWinCondition()) {
       this.ctx.fillText('艾莉状态：稳定', this.canvas.width / 2, this.canvas.height / 2 + 30);
       this.ctx.textAlign = 'start';
     }
+    } catch (e) { console.error('[游戏] 绘制异常:', e); }
 
 
     // 继续循环

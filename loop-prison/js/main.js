@@ -326,7 +326,7 @@ window.game = {
       if (this.ctx) {
         this._drawCurrentFrame();
       }
-      this._animationId = requestAnimationFrame((t) => this.gameLoop(t));
+      this.animFrameId = requestAnimationFrame((t) => this.gameLoop(t));
       return;
     }
 
@@ -544,6 +544,30 @@ if (window.game.audio) window.game.audio.playWin();
     this.animFrameId = requestAnimationFrame((ts) => this.gameLoop(ts));
   },
 
+  togglePause() {
+    if (this.state === 'playing') {
+      this.state = 'paused';
+      document.getElementById('pause-overlay').className = 'overlay-visible';
+    } else if (this.state === 'paused') {
+      this.state = 'playing';
+      document.getElementById('pause-overlay').className = 'overlay-hidden';
+    }
+  },
+
+  _drawCurrentFrame() {
+    if (!this.ctx || !this.map) return;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.save();
+    this.ctx.translate(this.map.cameraX || 0, 0);
+    if (typeof this.map.draw === 'function') this.map.draw(this.ctx);
+    if (typeof this.map.drawBullets === 'function') this.map.drawBullets(this.ctx);
+    if (typeof this.map.drawFallingBlocks === 'function') this.map.drawFallingBlocks(this.ctx);
+    if (this.player1 && typeof this.player1.draw === 'function') this.player1.draw(this.ctx);
+    if (this.aiPlayer && typeof this.aiPlayer.draw === 'function') this.aiPlayer.draw(this.ctx);
+    this.ctx.restore();
+  },
+
+
   // ============================================================
   // 无限模式
   // ============================================================
@@ -664,7 +688,7 @@ if (window.game.audio) window.game.audio.playWin();
 
     // 继续按钮点击
     document.getElementById('btn-resume').addEventListener('click', () => {
-      if (this.isPaused) this.togglePause();
+      if (this.state == 'paused') this.togglePause();
     });
     // 重新开始按钮点击
     this._btnRetry.addEventListener('click', () => {

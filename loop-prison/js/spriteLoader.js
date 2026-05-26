@@ -64,6 +64,8 @@ window.game.sprites = {
 
     for (const state of this._states) {
       const src = `${folder}/${prefix}-${state}.png`;
+      this._loadedCount++;
+      this._updateProgress();
       try {
         images[state] = await this._loadImage(src);
       } catch (e) {
@@ -84,6 +86,15 @@ window.game.sprites = {
    * @param {string} src
    * @returns {Promise<Image>}
    */
+  _updateProgress() {
+    this.loadingProgress = Math.min(100, Math.round((this._loadedCount / this._totalToLoad) * 100));
+    var fillEl = document.getElementById("loading-fill");
+    var textEl = document.getElementById("loading-text");
+    if (fillEl) fillEl.style.width = this.loadingProgress + "%";
+    if (textEl) textEl.textContent = "加载素材中... " + this.loadingProgress + "%";
+    if (this.onProgress) this.onProgress(this.loadingProgress);
+  },
+
   _loadImage(src) {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -135,6 +146,8 @@ window.game.sprites = {
     const env = {};
     for (const [key, filename] of Object.entries(files)) {
       const src = `${folder}/${filename}`;
+        this._loadedCount++;
+        this._updateProgress();
       try {
         env[key] = await this._loadImage(src);
       } catch (e) {

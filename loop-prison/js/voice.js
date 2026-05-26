@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
  * 语音指挥系统 -- 实时语音识别 + 音量分析
  * 增强版：防权限循环、指令去重、VAD噪音过滤、频域分析
  *
@@ -365,9 +365,23 @@ window.game.voiceControl = {
       rec.onerror = (event) => {
         if (rebuildGenErr !== this._generation) return;
         if (event.error !== 'no-speech') window.game.addEventLog('[语音] 错误：' + event.error);
-        if (event.error === 'aborted' || event.error === 'language-not-supported' || event.error === 'service-not-allowed' || event.error === 'not-allowed') {
-          if (this._autoRestart && this.isListening) { clearTimeout(this._restartTimeout); this._rebuildRecognition(); }
-        } else { if (event.error !== 'no-speech') this._rebuildRecognition(); }
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          this._permanentlyDenied = true;
+          this._autoRestart = false;
+          this.isListening = false;
+          this._rebuildAttempts = this._maxRebuildAttempts;
+          window.game.addEventLog('[语音] 麦克风权限被拒绝，已停止自动重试。请允许麦克风权限后重新启动。');
+          this._updateUI();
+        } else if (event.error === 'aborted' || event.error === 'language-not-supported') {
+          if (this._autoRestart && this.isListening && this._rebuildAttempts < this._maxRebuildAttempts) {
+            clearTimeout(this._restartTimeout);
+            this._rebuildRecognition();
+          }
+        } else if (event.error !== 'no-speech') {
+          if (this._rebuildAttempts < this._maxRebuildAttempts) {
+            this._rebuildRecognition();
+          }
+        }
       };
       var rebuildGenEnd = this._generation;
       rec.onend = () => {
@@ -381,13 +395,15 @@ window.game.voiceControl = {
     } catch (err) {
       this._rebuilding = false;
       console.log('[语音] 重建识别器失败:', err.message);
+      this._rebuildAttempts++;
       if (this._autoRestart && this.isListening) {
         clearTimeout(this._restartTimeout);
-        this._restartTimeout = setTimeout(function() { if (this._autoRestart && this.isListening) this._rebuildRecognition(); }.bind(this), 500);
+        if (this._rebuildAttempts < this._maxRebuildAttempts) {
+          this._restartTimeout = setTimeout(function() { if (this._autoRestart && this.isListening) this._rebuildRecognition(); }.bind(this), 500);
+        }
       }
     }
   },
-
   _startSilenceCheck() {
     var self = this;
     if (this._checkInterval) return;

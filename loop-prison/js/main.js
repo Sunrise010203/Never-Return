@@ -409,10 +409,10 @@ Object.assign(window.game, {
 
       // 更新角色（物理/移动/碰撞均由角色自身处理）
       if (this.player1 && typeof this.player1.update === 'function') {
-        this.player1.update(deltaTime);
+        try { this.player1.update(deltaTime); } catch (e) { console.error('[游戏] 玩家更新异常:', e); }
       }
       if (this.aiPlayer && typeof this.aiPlayer.update === 'function') {
-        this.aiPlayer.update(deltaTime);
+        try { this.aiPlayer.update(deltaTime); } catch (e) { console.error('[游戏] AI更新异常:', e); }
       }
 
             // ---- button check (pressed = no red line, released = restore) ----

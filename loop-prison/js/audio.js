@@ -97,7 +97,7 @@ window.game.audio = {
   _bgmNodes: null,
   _bgmInterval: null,
 
-  /** ������������ — ������˷�Χ���� */
+  /** 启动背景音乐 — 柔和的和弦进行，代替原本的刺耳嗡鸣 */
   startBGM() {
     if (!this._ensureContext()) return;
     if (this._bgmNodes) return;
@@ -105,59 +105,108 @@ window.game.audio = {
     var self = this;
 
     var masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.5 * this.volume, ctx.currentTime);
+    masterGain.gain.setValueAtTime(0.35 * this.volume, ctx.currentTime);
     masterGain.connect(ctx.destination);
 
-    // 1. ���׵����� — �־ݲ� 55Hz
-    var bassOsc = ctx.createOscillator();
+    // 和弦进行：Am - F - C - G（温暖、宁静、略带忧郁）
+    var chords = [
+      { root: 220,   third: 261.63, fifth: 329.63, bass: 110 },      // Am
+      { root: 174.61, third: 220,    fifth: 261.63, bass: 87.31 },    // F
+      { root: 261.63, third: 329.63, fifth: 392,    bass: 130.81 },   // C
+      { root: 196,    third: 246.94, fifth: 329.63, bass: 98 },       // G
+    ];
+
+    // 1. 温暖三角波垫音（根音 + 五音，经过低通滤波）
+    var pad1 = ctx.createOscillator();
+    var pad1Gain = ctx.createGain();
+    var pad1Filter = ctx.createBiquadFilter();
+    pad1Filter.type = 'lowpass';
+    pad1Filter.frequency.setValueAtTime(1000, ctx.currentTime);
+    pad1Filter.Q.setValueAtTime(1.5, ctx.currentTime);
+    pad1.type = 'triangle';
+    pad1.frequency.setValueAtTime(chords[0].root, ctx.currentTime);
+    pad1Gain.gain.setValueAtTime(0.07, ctx.currentTime);
+    pad1.connect(pad1Filter);
+    pad1Filter.connect(pad1Gain);
+    pad1Gain.connect(masterGain);
+    pad1.start();
+
+    var pad2 = ctx.createOscillator();
+    var pad2Gain = ctx.createGain();
+    pad2.type = 'triangle';
+    pad2.frequency.setValueAtTime(chords[0].fifth, ctx.currentTime);
+    pad2Gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    pad2.connect(pad2Gain);
+    pad2Gain.connect(masterGain);
+    pad2.start();
+
+    // 2. 柔和正弦波低音
+    var bass = ctx.createOscillator();
     var bassGain = ctx.createGain();
-    bassOsc.type = 'sawtooth';
-    bassOsc.frequency.setValueAtTime(55, ctx.currentTime);
-    bassGain.gain.setValueAtTime(0.12, ctx.currentTime);
-    bassOsc.connect(bassGain);
+    bass.type = 'sine';
+    bass.frequency.setValueAtTime(chords[0].bass, ctx.currentTime);
+    bassGain.gain.setValueAtTime(0.10, ctx.currentTime);
+    bass.connect(bassGain);
     bassGain.connect(masterGain);
-    bassOsc.start();
+    bass.start();
 
-    // 2. ��Ƶ���� — ���ͨ�˲����־ݲ�
-    var padOsc = ctx.createOscillator();
-    var padGain = ctx.createGain();
-    var padFilter = ctx.createBiquadFilter();
-    padFilter.type = 'lowpass';
-    padFilter.frequency.setValueAtTime(350, ctx.currentTime);
-    padFilter.Q.setValueAtTime(2, ctx.currentTime);
-    padOsc.type = 'sawtooth';
-    padOsc.frequency.setValueAtTime(110, ctx.currentTime);
-    padGain.gain.setValueAtTime(0.06, ctx.currentTime);
-    padOsc.connect(padFilter);
-    padFilter.connect(padGain);
-    padGain.connect(masterGain);
-    padOsc.start();
+    // 3. 清脆铃声般的琶音（正弦波演奏和弦内音）
+    var arp = ctx.createOscillator();
+    var arpGain = ctx.createGain();
+    arp.type = 'sine';
+    arp.frequency.setValueAtTime(chords[0].root, ctx.currentTime);
+    arpGain.gain.setValueAtTime(0.035, ctx.currentTime);
+    arp.connect(arpGain);
+    arpGain.connect(masterGain);
+    arp.start();
 
-    // 3. �ͨ����Ƶ�������˲���ֹƵ��
+    // 4. 音量低频振荡器 — 垫音缓慢呼吸效果
     var lfo = ctx.createOscillator();
     var lfoGain = ctx.createGain();
     lfo.type = 'sine';
-    lfo.frequency.setValueAtTime(0.2, ctx.currentTime);
-    lfoGain.gain.setValueAtTime(80, ctx.currentTime);
+    lfo.frequency.setValueAtTime(0.15, ctx.currentTime);
+    lfoGain.gain.setValueAtTime(0.025, ctx.currentTime);
     lfo.connect(lfoGain);
-    lfoGain.connect(padFilter.frequency);
+    lfoGain.connect(pad1Gain.gain);
+    lfoGain.connect(pad2Gain.gain);
     lfo.start();
 
-    this._bgmNodes = [
-      { osc: bassOsc, gain: bassGain },
-      { osc: padOsc, gain: padGain, filter: padFilter },
-      { osc: lfo, gain: lfoGain },
-      masterGain
-    ];
+    // 每 2.5 秒换和弦，带平滑过渡
+    var chordIndex = 0;
+    var arpStep = 0;
+    var chordDuration = 2500;
 
     this._bgmInterval = setInterval(function() {
       try {
-        masterGain.gain.setValueAtTime(0.5 * self.volume, ctx.currentTime);
+        var chord = chords[chordIndex % chords.length];
+        var t = ctx.currentTime;
+
+        // 平滑滑音到新和弦的频率
+        pad1.frequency.setTargetAtTime(chord.root, t, 0.4);
+        pad2.frequency.setTargetAtTime(chord.fifth, t, 0.4);
+        bass.frequency.setTargetAtTime(chord.bass, t, 0.3);
+
+        // 琶音：循环演奏和弦内音（根音 → 三音 → 五音 → 三音 → ...）
+        var arpNotes = [chord.root, chord.third, chord.fifth, chord.third,
+                        chord.root, chord.fifth * 2, chord.third, chord.fifth * 1.5];
+        arp.frequency.setTargetAtTime(arpNotes[arpStep % arpNotes.length], t + 0.05, 0.15);
+        arpStep++;
+
+        chordIndex++;
       } catch(e) {}
-    }, 2000);
+    }, chordDuration);
+
+    this._bgmNodes = {
+      master: masterGain,
+      pad1: { osc: pad1, gain: pad1Gain, filter: pad1Filter },
+      pad2: { osc: pad2, gain: pad2Gain },
+      bass: { osc: bass, gain: bassGain },
+      arp: { osc: arp, gain: arpGain },
+      lfo: { osc: lfo, gain: lfoGain }
+    };
   },
 
-  /** ֹͣ���������� ���˳� 500ms */
+  /** 停止背景音乐，淡出 500ms */
   stopBGM() {
     if (!this._bgmNodes) return;
     if (this._bgmInterval) {
@@ -167,19 +216,25 @@ window.game.audio = {
     try {
       var ctx = this._ctx;
       var t = ctx.currentTime + 0.5;
-      for (var i = 0; i < this._bgmNodes.length; i++) {
-        var n = this._bgmNodes[i];
-        if (n && n.gain) n.gain.gain.linearRampToValueAtTime(0.001, t);
-      }
+      var nodes = this._bgmNodes;
+      // 平滑淡出所有增益节点
+      if (nodes.master) nodes.master.gain.linearRampToValueAtTime(0.001, t);
+      if (nodes.pad1 && nodes.pad1.gain) nodes.pad1.gain.gain.linearRampToValueAtTime(0.001, t);
+      if (nodes.pad2 && nodes.pad2.gain) nodes.pad2.gain.gain.linearRampToValueAtTime(0.001, t);
+      if (nodes.bass && nodes.bass.gain) nodes.bass.gain.gain.linearRampToValueAtTime(0.001, t);
+      if (nodes.arp && nodes.arp.gain) nodes.arp.gain.gain.linearRampToValueAtTime(0.001, t);
       var self = this;
       setTimeout(function() {
         if (!self._bgmNodes) return;
-        for (var i = 0; i < self._bgmNodes.length; i++) {
-          var n = self._bgmNodes[i];
-          if (n && n.osc) { try { n.osc.stop(); } catch(e) {} }
-          if (n && n.filter) { try { n.filter.disconnect(); } catch(e) {} }
-          if (n && n.gain) { try { n.gain.disconnect(); } catch(e) {} }
+        var n = self._bgmNodes;
+        var allNodes = [n.pad1, n.pad2, n.bass, n.arp, n.lfo];
+        for (var i = 0; i < allNodes.length; i++) {
+          var node = allNodes[i];
+          if (node && node.osc) { try { node.osc.stop(); } catch(e) {} }
+          if (node && node.filter) { try { node.filter.disconnect(); } catch(e) {} }
+          if (node && node.gain) { try { node.gain.disconnect(); } catch(e) {} }
         }
+        if (n.master) { try { n.master.disconnect(); } catch(e) {} }
         self._bgmNodes = null;
       }, 600);
     } catch(e) {

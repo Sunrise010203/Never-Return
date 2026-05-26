@@ -701,6 +701,9 @@ if (window.game.audio) window.game.audio.playWin();
 
     // 设置艾莉头像图片
     this._setupAllyAvatar();
+    // Hide loading bar after sprites loaded
+    var loadBar = document.getElementById("loading-bar");
+    if (loadBar) loadBar.className = "loading-hidden";
 
     // 精灵就绪后再启动游戏循环
         // Show tutorial on first launch

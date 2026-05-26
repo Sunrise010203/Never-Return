@@ -222,7 +222,7 @@ window.game.sprites = {
     const threshold = speed * 0.03;
     if (Math.abs(char.vx || 0) < threshold) return 'idle';
 
-    return this._showWalk1 ? 'walk1' : 'walk2';
+    return (Math.floor(performance.now() / 150) % 2 === 0) ? 'walk1' : 'walk2';
   },
 
   // ============================================================

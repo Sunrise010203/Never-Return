@@ -66,6 +66,18 @@ window.game.player1 = {
       }
     }
 
+    // ---- 行走音效（每 150ms 一步）----
+    if (this.isGrounded && (keys['KeyA'] || keys['KeyD']) && !this.isCrouching) {
+      if (!this._stepTimer) this._stepTimer = 0;
+      this._stepTimer += dt;
+      if (this._stepTimer >= 0.15) {
+        this._stepTimer = 0;
+        if (window.game.audio) window.game.audio.playStep();
+      }
+    } else {
+      this._stepTimer = 0;
+    }
+
     // ---- 水平移动 + 固体碰撞 ----
     const speed = this.isCrouching ? this.crouchSpeed : this.speed;
     let dx = 0;
@@ -146,9 +158,10 @@ window.game.player1 = {
         } else {
           // 落在固体顶部
           this.y = obs.y - this.h;
+          var _landVy = this.vy;
           this.vy = 0;
           this.isGrounded = true;
-            if (window.game.audio && this.vy > 100) window.game.audio.playLand();
+            if (window.game.audio && _landVy > 100) window.game.audio.playLand();
         }
         verticalResolved = true;
         break;
@@ -160,17 +173,19 @@ window.game.player1 = {
       const pfResult = map.checkPlatformCollision(vRect, this._prevBottom, this.vy);
       if (pfResult.hit) {
         this.y = pfResult.platformTop;
+        var _landVy = this.vy;
         this.vy = 0;
         this.isGrounded = true;
-            if (window.game.audio && this.vy > 100) window.game.audio.playLand();
+            if (window.game.audio && _landVy > 100) window.game.audio.playLand();
       } else {
         this.y = clampedY;
         // 是否踩在 Canvas 底部
         if (clampedY >= maxY) {
           this.y = maxY;
+          var _landVy = this.vy;
           this.vy = 0;
           this.isGrounded = true;
-            if (window.game.audio && this.vy > 100) window.game.audio.playLand();
+            if (window.game.audio && _landVy > 100) window.game.audio.playLand();
         } else {
           this.isGrounded = false;
         }
@@ -215,6 +230,7 @@ window.game.player1 = {
   die() {
     this.deaths++;
     this.collisionCount++;
+    if (window.game.audio) window.game.audio.playDeath();
     window.game.addEventLog('[警告] 你触碰到了数据裂缝！正在重置位置...');
     if (typeof window.game.respawnPlayer === 'function') {
       window.game.respawnPlayer();
@@ -264,11 +280,31 @@ window.game.player1 = {
     ctx.strokeRect(this.x + 1, this.y + 1, this.w - 2, this.h - 2);
     ctx.restore();
 
+    // Walk bob animation (works even in geometry fallback)
+    var walkBob = 0;
+    if (this.isGrounded && (window.game.keys["KeyA"] || window.game.keys["KeyD"] || window.game.keys["ArrowLeft"] || window.game.keys["ArrowRight"])) {
+      if (!this._walkBobTimer) this._walkBobTimer = 0;
+      this._walkBobTimer += 0.016;
+      if (this._walkBobTimer > 0.3) this._walkBobTimer = 0;
+      walkBob = Math.sin(this._walkBobTimer * 20) * 2;
+    } else {
+      this._walkBobTimer = 0;
+    }
+
+    ctx.save();
+    ctx.translate(0, walkBob);
     ctx.fillStyle = '#0a0a0a';
     ctx.font = 'bold 10px "Courier New", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(this.isCrouching ? 'p1' : 'P1', cx, cy);
+    var frame = Math.floor(performance.now() / 150) % 2;
+      ctx.fillStyle = '#0a0a0a';
+      ctx.font = 'bold 10px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.isCrouching ? 'p1' : 'P1', cx, cy + walkBob);
+      ctx.textAlign = 'start';
+    ctx.restore();
     ctx.textAlign = 'start';
   }
 };

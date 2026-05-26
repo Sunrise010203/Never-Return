@@ -8,11 +8,6 @@
 
 | 文件 | 路径 |
 |------|------|
-| 需求文档 | docs/requirements.md |
-| 技术规范 | docs/technical-spec.md |
-| 设计规范 | docs/design-spec.md |
-| 执行步骤 | docs/implementation-steps.md |
-| 开发日志 | devlog/YYYY-MM-DD.md |
 
 ## 工作说明
 
@@ -21,7 +16,7 @@
 3. 遵循分步开发计划（docs/implementation-steps.md），每完成一步验证后再进行下一步
 4. 所有公共接口必须挂载在 window.game 上，保持与 docs/technical-spec.md 中的接口定义一致
 5. 新增接口需同步更新 docs/technical-spec.md
-6. JS 文件加载顺序：main.js → map.js → player.js → aiPlayer.js → events.js → voice.js → roast.js
+6. JS 文件加载顺序：audio.js → main.js → levelGenerator.js → spriteLoader.js → map.js → player.js → aiPlayer.js → llmClient.js → voice.js → roast.js → leaderboard.js
 
 ## 接口约定速查
 

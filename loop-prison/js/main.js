@@ -12,7 +12,8 @@
  *         window.game.JUMP_VELOCITY = -380 (px/s)
  * ============================================================ */
 
-window.game = {
+window.game = window.game || {};
+Object.assign(window.game, {
   // === Canvas 上下文 ===
   canvas: document.getElementById('gameCanvas'),
   _canvasContainer: null,
@@ -62,6 +63,10 @@ window.game = {
    */
   addEventLog(text) {
     const logEl = document.getElementById('event-log');
+    if (!logEl) {
+      console.log("[系统]", text);
+      return;
+    }
     const hasPrefix = /^\[/.test(text);
     const displayText = hasPrefix ? text : `[系统] ${text}`;
 
@@ -447,8 +452,8 @@ window.game = {
       });
 
       // 通关判定
-if (window.game.audio) window.game.audio.playWin();
-      if (this.checkWinCondition()) {
+if (this.checkWinCondition()) {
+        if (window.game.audio) window.game.audio.playWin();
         this.state = 'win';
         var levelLabel2 = '第' + (this.currentLevelIndex + 1) + '关';
         if (this.currentLevelIndex >= this.levels.length) {
@@ -489,7 +494,6 @@ if (window.game.audio) window.game.audio.playWin();
       }
     }
 
-    if (this.state !== 'waiting') {
     // --- 绘制 ---
     if (this.map && typeof this.map.draw === 'function') {
       this.map.draw(this.ctx);
@@ -539,7 +543,6 @@ if (window.game.audio) window.game.audio.playWin();
     }
 
 
-    }
     // 继续循环
     this.animFrameId = requestAnimationFrame((ts) => this.gameLoop(ts));
   },
@@ -548,9 +551,11 @@ if (window.game.audio) window.game.audio.playWin();
     if (this.state === 'playing') {
       this.state = 'paused';
       document.getElementById('pause-overlay').className = 'overlay-visible';
+      if (window.game.audio && window.game.audio._ctx) window.game.audio._ctx.suspend();
     } else if (this.state === 'paused') {
       this.state = 'playing';
       document.getElementById('pause-overlay').className = 'overlay-hidden';
+      if (window.game.audio && window.game.audio._ctx && window.game.audio._ctx.state === 'suspended') window.game.audio._ctx.resume();
     }
   },
 
@@ -640,11 +645,7 @@ if (window.game.audio) window.game.audio.playWin();
    * 启动游戏。初始化 Canvas 上下文，加载第一关，开始主循环。
    */
   _handleResize() {
-    var container = this._canvasContainer;
-    if (!container) {
-      container = document.querySelector('.canvas-wrapper');
-      this._canvasContainer = container;
-    }
+    var container = document.getElementById('game-container');
     if (!container || !this.canvas) return;
     var maxW = window.innerWidth;
     var maxH = window.innerHeight;
@@ -657,10 +658,8 @@ if (window.game.audio) window.game.audio.playWin();
       w = maxW;
       h = w / ratio;
     }
-    this.canvas.style.width = Math.floor(w) + 'px';
-    this.canvas.style.height = Math.floor(h) + 'px';
-    this.canvas.style.display = 'block';
-    this.canvas.style.margin = '0 auto';
+    container.style.maxWidth = Math.floor(w) + 'px';
+    container.style.width = '100%';
   },
 
   startGame() {
@@ -668,7 +667,20 @@ if (window.game.audio) window.game.audio.playWin();
     this._handleResize();
     var self = this;
     window.addEventListener('resize', function() { self._handleResize(); });
-    if (window.game.audio) window.game.audio._init();
+    if (window.game.audio) {
+      window.game.audio._init();
+      if (window.game.audio._ctx) {
+        if (window.game.audio._ctx.state === 'suspended') {
+          window.game.audio._ctx.resume().then(function() {
+            window.game.audio.startBGM();
+          }).catch(function() {
+            window.game.audio.startBGM();
+          });
+        } else {
+          window.game.audio.startBGM();
+        }
+      }
+    }
 
     // 显示加载进度条
     var loadBar = document.getElementById('loading-bar');
@@ -681,7 +693,8 @@ if (window.game.audio) window.game.audio.playWin();
     this._btnSkip = document.getElementById('btn-skip');
 
     // 下一关按钮点击
-    this._btnNext.addEventListener('click', () => {
+    document.getElementById('btn-pause').addEventListener('click', function() { if (window.game) window.game.togglePause(); });
+      this._btnNext.addEventListener('click', () => {
       this.loadLevel(this.currentLevelIndex + 1);
     });
 
@@ -718,7 +731,17 @@ if (window.game.audio) window.game.audio.playWin();
    * 第一帧即开始渲染（几何占位），精灵加载完成后自动切换。
    */
   async _bootGame() {
-    // 先加载精灵图（等待完成）
+    // 立即启动游戏循环（先用几何占位渲染，不等待精灵加载）
+    var self = this;
+
+    // Show tutorial or start game loop
+    if (!localStorage.getItem('loopPrisonTutorialDone')) {
+      this._showTutorial();
+    } else {
+      this._startLoop();
+    }
+
+    // 后台加载精灵图（加载完成后自动切换，不阻塞游戏）
     if (this.sprites && typeof this.sprites.loadAll === 'function') {
       await this.sprites.loadAll();
     }
@@ -728,14 +751,6 @@ if (window.game.audio) window.game.audio.playWin();
     // Hide loading bar after sprites loaded
     var loadBar = document.getElementById("loading-bar");
     if (loadBar) loadBar.className = "loading-hidden";
-
-    // 精灵就绪后再启动游戏循环
-        // Show tutorial on first launch
-    if (!localStorage.getItem('loopPrisonTutorialDone')) {
-      this._showTutorial();
-    } else {
-      this._startLoop();
-    }
   },
 
   _startLoop() {
@@ -753,7 +768,7 @@ if (window.game.audio) window.game.audio.playWin();
       if (inlineAvatar) inlineAvatar.src = this.sprites.ally.src;
     }
   }
-};
+});
 
 // ============================================================
 // 键盘输入监听
@@ -1010,7 +1025,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   };
   window.addEventListener('keydown', onStartKey);
-});      // ---- 设置面板事件 ----
       document.getElementById('btn-settings').addEventListener('click', function() {
         document.getElementById('settings-modal').className = 'modal-visible';
       });
@@ -1084,7 +1098,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (savedKey) document.getElementById('setting-apikey').value = savedKey;
       if (savedEndpoint) document.getElementById('setting-endpoint').value = savedEndpoint;
       if (savedModel) document.getElementById('setting-model').value = savedModel;
-
+});
 
 
 

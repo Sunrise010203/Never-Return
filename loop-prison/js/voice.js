@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
  * 语音指挥系统 -- 实时语音识别 + 音量分析
  * 增强版：防权限循环、指令去重、VAD噪音过滤、频域分析
  *
@@ -29,6 +29,7 @@ window.game.voiceControl = {
   _textStabilityInterval: 300,
   _noiseState: 'silence',
   _pendingMicRequest: false,
+  _permanentlyDenied: false,
   _silenceTimer: null,
   _silenceTimeout: 300,
   _silenceCheckText: '',
@@ -63,6 +64,15 @@ window.game.voiceControl = {
       if (!AudioContext) { console.log('[音量] 不支持 Web Audio API'); return; }
       this._audioContext = new AudioContext();
       this._pendingMicRequest = true;
+      // Check permission state before requesting
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({name: 'microphone'}).then(function(permStatus) {
+          if (permStatus.state === 'denied') {
+            console.log('[语音] 麦克风权限已被拒绝，跳过请求');
+            return;
+          }
+        }).catch(function(){});
+      }
       navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
       }).then((stream) => {
@@ -355,7 +365,7 @@ window.game.voiceControl = {
       rec.onerror = (event) => {
         if (rebuildGenErr !== this._generation) return;
         if (event.error !== 'no-speech') window.game.addEventLog('[语音] 错误：' + event.error);
-        if (event.error === 'aborted' || event.error === 'language-not-supported' || event.error === 'service-not-allowed') {
+        if (event.error === 'aborted' || event.error === 'language-not-supported' || event.error === 'service-not-allowed' || event.error === 'not-allowed') {
           if (this._autoRestart && this.isListening) { clearTimeout(this._restartTimeout); this._rebuildRecognition(); }
         } else { if (event.error !== 'no-speech') this._rebuildRecognition(); }
       };
@@ -428,3 +438,4 @@ window.game.voiceControl = {
     }
   }
 };
+

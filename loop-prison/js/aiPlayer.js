@@ -448,6 +448,18 @@ window.game.aiPlayer = {
     }
 
 // ---- 水平移动 + 固体碰撞（距离制） ----
+    // ---- AI 行走音效 ----
+    if (this.isGrounded && dx !== 0 && !this.isCrouching) {
+      if (!this._stepTimer) this._stepTimer = 0;
+      this._stepTimer += dt;
+      if (this._stepTimer >= 0.18) {
+        this._stepTimer = 0;
+        if (window.game.audio) window.game.audio.playStep();
+      }
+    } else {
+      this._stepTimer = 0;
+    }
+
     if (dx !== 0) {
       // 如果还有剩余移动距离
       if (this._moveDistanceRemaining > 0) {
@@ -606,6 +618,7 @@ window.game.aiPlayer = {
   die() {
     this.deaths++;
     this.collisionCount++;
+    if (window.game.audio) window.game.audio.playDeath();
     // 死亡时清除当前指令和移动距离，防止复活后继续执行旧指令
     this._moveDistanceRemaining = 0;
     this.clearExternalCommand();

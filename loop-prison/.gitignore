@@ -32,3 +32,5 @@ final_*.py
 run_me.py
 simple_fix.py
 fix_t*.py
+
+*.zip
